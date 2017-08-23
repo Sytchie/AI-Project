@@ -1,5 +1,6 @@
 import configparser
 import psycopg2
+from random import randint
 
 ai_file = 'AIs'
 ais = configparser.RawConfigParser()
@@ -73,15 +74,18 @@ def get_pos_fac_phrase(words, count=0):
 
 
 def greet():
-    # TODO: Choose a greeting phrase
-    greeting = 'Hello'
-    print('%s: %s' % (ai_name, greeting))
+    if ai_mood >= 0:
+        db_cur.execute("SELECT greeting FROM greetings WHERE pos_fac >= 0;")
+    else:
+        db_cur.execute("SELECT greeting FROM greetings WHERE pos_fac < 0;")
+    greeting = db_cur.fetchall()
+    print('%s: %s' % (ai_name, greeting[randint(0, len(greeting) - 1)][0]))
 
 
 def respond(positivity):
     # TODO: Return an appropriate AI response
     response = 'Positivity of phrase: %d' % positivity
-    print(response)
+    print('%s: %s' % (ai_name, response))
     return response
 
 
@@ -103,7 +107,8 @@ def main(name):
     import_ai(name)
     greet()
     while True:
-        print('Current mood of %s: %.1f' % (ai_name, ai_mood))
+        print('\n-----------------------------------------\n')
+        print('Current mood of %s: %.1f\n' % (ai_name, ai_mood))
         say(input('You: '))
 
 
