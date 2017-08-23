@@ -32,14 +32,31 @@ def import_ai(name):
         set_ai(name)
 
 
-def get_table(word, count):
-    # TODO: More dynamic sentence structure
+def get_table(current, length):
     return {
-        0: 'pronouns' if word in ['i', 'you', 'he', 'she', 'it', 'we', 'they', ai_name.lower()] else 'greetings',
-        1: 'verbs',
-        2: 'noun_next' if word == 'a' else 'adjectives',
-        3: 'nouns',
-    }.get(count, 'error')
+        5: {
+            5: 'pronouns',
+            4: 'verbs',
+            3: 'noun_next',
+            2: 'adjectives',
+            1: 'nouns'
+        }.get(current),
+        4: {
+            4: 'pronouns',
+            3: 'verbs',
+            2: 'noun_next',
+            1: 'nouns'
+        }.get(current),
+        3: {
+            3: 'pronouns',
+            2: 'verbs',
+            1: 'adjectives'
+        }.get(current),
+        2: {
+            2: 'pronouns',
+            1: 'adjectives'
+        }.get(current)
+    }.get(length, 'greetings')
 
 
 def get_inf(verb):
@@ -67,10 +84,10 @@ def get_pos_fac_word(word, table):
     return pos
 
 
-def get_pos_fac_phrase(words, count=0):
+def get_pos_fac_phrase(words, length):
     if not words:
         return 1
-    return get_pos_fac_word(words[0], get_table(words[0], count)) * get_pos_fac_phrase(words[1:], count + 1)
+    return get_pos_fac_word(words[0], get_table(len(words), length)) * get_pos_fac_phrase(words[1:], length)
 
 
 def greet():
@@ -98,7 +115,7 @@ def say(message):
         ais.write(open(ai_file + '.cfg', 'w'))
         exit(0)
     else:
-        positivity = ai_sens * get_pos_fac_phrase(words)
+        positivity = ai_sens * get_pos_fac_phrase(words, len(words))
         ai_mood += positivity
     respond(positivity)
 
