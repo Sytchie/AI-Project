@@ -11,6 +11,8 @@ ai_sens = 1.0
 db_con = psycopg2.connect(database='sytchie', user='sytchie', host='192.168.1.9')
 db_cur = db_con.cursor()
 
+debug = False
+
 
 def set_ai(name, mood=0.0):
     try:
@@ -72,7 +74,8 @@ def get_inf(verb):
 def get_pos_fac_word(word, table):
     if table == 'noun_next' or table == 'pronouns':
         pos = 1
-        print("Positivity factor of '%s' from table '%s': %d" % (word, table, pos))
+        if debug:
+            print("Positivity factor of '%s' from table '%s': %d" % (word, table, pos))
         return pos
     elif table == 'verbs':
         word = get_inf(word)
@@ -80,7 +83,8 @@ def get_pos_fac_word(word, table):
     column_name = db_cur.fetchone()[0]
     db_cur.execute("SELECT pos_fac FROM %s WHERE %s = '%s';" % (table, column_name, word))
     pos = db_cur.fetchone()[0]
-    print("Positivity factor of '%s' from table '%s': %d" % (word, table, pos))
+    if debug:
+        print("Positivity factor of '%s' from table '%s': %d" % (word, table, pos))
     return pos
 
 
@@ -101,7 +105,9 @@ def greet():
 
 def respond(positivity):
     # TODO: Return an appropriate AI response
-    response = 'Positivity of phrase: %d' % positivity
+    if debug:
+        print('Positivity of phrase: %d' % positivity)
+    response = 'TODO'
     print('%s: %s' % (ai_name, response))
     return response
 
@@ -109,15 +115,14 @@ def respond(positivity):
 def say(message):
     global ai_mood
     words = message.lower().split()
-    positivity = 0.0
     if words[0] == '/quit':
         ais.set(ai_name, 'mood', ai_mood)
         ais.write(open(ai_file + '.cfg', 'w'))
         exit(0)
     else:
         positivity = ai_sens * get_pos_fac_phrase(words, len(words))
+        respond(positivity)
         ai_mood += positivity
-    respond(positivity)
 
 
 def main(name):
