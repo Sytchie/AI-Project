@@ -8,7 +8,7 @@ ai_name = ''
 ai_mood = 0.0
 ai_sens = 1.0
 
-db_con = psycopg2.connect(database='sytchie', user='sytchie', host='192.168.0.103')
+db_con = psycopg2.connect(database='sytchie', user='sytchie', host='192.168.0.2')
 db_cur = db_con.cursor()
 
 debug = False
