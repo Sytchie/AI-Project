@@ -1,5 +1,8 @@
 package sytchie.daytasks;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -86,6 +89,16 @@ public class MainActivity extends AppCompatActivity {
         startTextListener(editText, 2);
     }
 
+    private void copyToClipboard(String msg) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("", msg);
+        clipboard.setPrimaryClip(clip);
+    }
+
+    private void saveToDB() {
+        //TODO: Connect to and query from DB
+    }
+
     public void startDay(View view) {
         dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
@@ -117,8 +130,8 @@ public class MainActivity extends AppCompatActivity {
                 "Positive thing 1: " + posThings[0] + "\n" +
                 "Positive thing 2: " + posThings[1] + "\n" +
                 "Positive thing 3: " + posThings[2];
-        //TODO: Copy to clipboard
-        //TODO: Save in DB
+        copyToClipboard(summary);
+        saveToDB();
         setContentView(R.layout.layout_summary);
         TextView textView = (TextView) findViewById(R.id.text_summary);
         textView.setText(summary);
