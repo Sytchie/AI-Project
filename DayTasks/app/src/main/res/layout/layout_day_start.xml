@@ -12,6 +12,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/button_wake_up"
-            android:onClick="startDay (MainActivity)" android:layout_alignParentTop="true" android:layout_alignParentStart="true"
+            android:onClick="startDay" android:layout_alignParentTop="true" android:layout_alignParentStart="true"
             android:layout_alignParentBottom="true" android:layout_alignParentEnd="true"/>
 </RelativeLayout>

@@ -4,12 +4,6 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
 
-    <Button
-            android:text="End day"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_alignParentBottom="true"
-            android:id="@+id/button_end_day" android:layout_alignParentStart="true" android:layout_alignParentEnd="true"
-            android:onClick="endDay (MainActivity)"/>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -17,10 +11,16 @@
             android:text="Day started at --:--"
             android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
     <TextView
-            android:text="Things to be done:"
+            android:text="\nThings to be done:"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/textView2" android:layout_below="@+id/text_day_start" android:layout_alignEnd="@+id/checkBox4"/>
+    <Button
+            android:text="End day"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_alignParentBottom="true"
+            android:id="@+id/button_end_day" android:layout_alignParentStart="true" android:layout_alignParentEnd="true"
+            android:onClick="endDay"/>
     <CheckBox
             android:text="Morning Sport"
             android:layout_width="wrap_content"

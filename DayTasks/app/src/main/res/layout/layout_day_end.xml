@@ -8,14 +8,16 @@
             android:text="Submit and copy to clipboard"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/button_submit" android:layout_alignParentBottom="true"
-            android:layout_alignParentStart="true"/>
+            android:layout_alignParentStart="true"
+
+            android:enabled="false" android:onClick="submit"/>
     <TextView
             android:text="Day ended at --:--"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/text_day_end" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
     <TextView
-            android:text="Write down three positive things that happened today:"
+            android:text="\nWrite down three positive things that happened today:"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" android:id="@+id/textView3"
             android:layout_below="@+id/text_day_end" android:layout_alignParentStart="true"/>
