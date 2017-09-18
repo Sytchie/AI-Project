@@ -123,12 +123,6 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
-    private void copyToClipboard(String msg) {
-        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("", msg);
-        clipboard.setPrimaryClip(clip);
-    }
-
     public void startDay(View view) {
         dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
@@ -151,6 +145,12 @@ public class MainActivity extends AppCompatActivity {
         loadEditTexts();
         TextView textView = (TextView) findViewById(R.id.text_day_end);
         textView.setText(time);
+    }
+
+    private void copyToClipboard(String msg) {
+        ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("", msg);
+        clipboard.setPrimaryClip(clip);
     }
 
     private void enableSubmit() {
@@ -178,14 +178,8 @@ public class MainActivity extends AppCompatActivity {
             summary += "Positive thing " + i + ": " + posThings.get(posThing) + "\n";
         }
         copyToClipboard(summary);
-        saveDay();
         setContentView(R.layout.layout_summary);
         TextView textView = (TextView) findViewById(R.id.text_summary);
         textView.setText(summary);
-    }
-
-    public void exit(View view) {
-        finish();
-        System.exit(0);
     }
 }

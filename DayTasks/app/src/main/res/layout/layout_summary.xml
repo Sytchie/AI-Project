@@ -6,11 +6,5 @@
 
     <TextView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/text_summary" android:text="Summary"/>
-    <Button
-            android:text="OK"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:layout_alignParentBottom="true"
-            android:id="@+id/button_exit" android:layout_alignParentStart="true" android:layout_alignParentEnd="true"
-            android:onClick="exit"/>
+            android:layout_height="wrap_content" android:id="@+id/text_summary"/>
 </RelativeLayout>
