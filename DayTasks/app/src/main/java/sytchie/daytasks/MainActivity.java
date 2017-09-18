@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadDay() {
-        date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
+        date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
         SharedPreferences sharedPreferences = getSharedPreferences("day_" + date.replaceAll("\\.", "-"), MODE_PRIVATE);
         //sharedPreferences.edit().clear().apply(); //Debug
         dayStartTime = sharedPreferences.getString("day_start_time", null);
