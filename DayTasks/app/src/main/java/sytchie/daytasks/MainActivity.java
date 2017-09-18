@@ -52,12 +52,12 @@ public class MainActivity extends AppCompatActivity {
             tasks.put(task, Boolean.valueOf(sharedPreferences.getString(task, null)));
         }
         for (int i = 1; i <= posThingNum; i++) {
-            String posThing = "pos_thing_" + i;
-            String posString = sharedPreferences.getString(posThing, null);
+            String posKey = "pos_thing_" + i;
+            String posString = sharedPreferences.getString(posKey, null);
             if (posString == null) {
                 posString = "Positive thing " + i;
             }
-            posThings.put(posThing, posString);
+            posThings.put(posKey, posString);
         }
     }
 
@@ -83,9 +83,8 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_day_end_inner);
         for (int i = 1; i <= posThingNum; i++) {
             final EditText editText = new EditText(this);
-            final int finalI = i;
-            String string = posThings.get("pos_thing_" + i);
-            editText.setText(string);
+            final String posKey = "pos_thing_" + i;
+            editText.setText(posThings.get(posKey));
             editText.setSelectAllOnFocus(true);
             editText.setSingleLine(true);
             linearLayout.addView(editText);
@@ -100,7 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void afterTextChanged(Editable editable) {
-                    posThings.put("pos_thing_" + finalI, editText.getText().toString());
+                    posThings.put(posKey, editText.getText().toString());
                     enableSubmit();
                 }
             });
@@ -117,8 +116,8 @@ public class MainActivity extends AppCompatActivity {
             editor.putString(task, String.valueOf(tasks.get(task)));
         }
         for (int i = 1; i <= posThingNum; i++) {
-            String posThing = "pos_thing_" + i;
-            editor.putString(posThing, posThings.get(posThing));
+            String posKey = "pos_thing_" + i;
+            editor.putString(posKey, posThings.get(posKey));
         }
         editor.apply();
     }
@@ -126,11 +125,11 @@ public class MainActivity extends AppCompatActivity {
     public void startDay(View view) {
         dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
-        String time = "Day started at " + dayStartTime;
+        String timeString = "Day started at " + dayStartTime;
         setContentView(R.layout.layout_tasks);
         loadCheckBoxes();
         TextView textView = (TextView) findViewById(R.id.text_day_start);
-        textView.setText(time);
+        textView.setText(timeString);
     }
 
     private void enableEndDay() {
@@ -140,29 +139,29 @@ public class MainActivity extends AppCompatActivity {
 
     public void endDay(View view) {
         dayEndTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
-        String time = "Day ended at " + dayEndTime;
+        String timeString = "Day ended at " + dayEndTime;
         setContentView(R.layout.layout_day_end);
         loadEditTexts();
         TextView textView = (TextView) findViewById(R.id.text_day_end);
-        textView.setText(time);
+        textView.setText(timeString);
     }
 
-    private void copyToClipboard(String msg) {
+    private void copyToClipboard(String string) {
         ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        ClipData clip = ClipData.newPlainText("", msg);
+        ClipData clip = ClipData.newPlainText("", string);
         clipboard.setPrimaryClip(clip);
     }
 
     private void enableSubmit() {
         Button button = (Button) findViewById(R.id.button_submit);
-        boolean b = true;
+        boolean enable = true;
         for (int i = 1; i <= posThingNum; i++) {
-            String string = posThings.get("pos_thing_" + i);
-            if (string == null || string.matches("Positive thing " + i) || string.matches("")) {
-                b = false;
+            String posKey = posThings.get("pos_thing_" + i);
+            if (posKey == null || posKey.matches("Positive thing " + i) || posKey.matches("")) {
+                enable = false;
             }
         }
-        button.setEnabled(b);
+        button.setEnabled(enable);
     }
 
     public void submit(View view) {
@@ -170,13 +169,18 @@ public class MainActivity extends AppCompatActivity {
                 "Day start at " + dayStartTime + "\n" +
                 "Day end at " + dayEndTime + "\n\n";
         for (String task : tasks.keySet()) {
-            summary += task + ": " + tasks.get(task) + "\n";
+            String string = "No";
+            if (tasks.get(task)) {
+                string = "Yes";
+            }
+            summary += task + ": " + string + "\n";
         }
         summary += "\n";
         for (int i = 1; i <= posThings.keySet().size(); i++) {
-            String posThing = "pos_thing_" + i;
-            summary += "Positive thing " + i + ": " + posThings.get(posThing) + "\n";
+            String posKey = "pos_thing_" + i;
+            summary += "Positive thing " + i + ": " + posThings.get(posKey) + "\n";
         }
+        summary = summary.substring(0, summary.length() - 1);
         copyToClipboard(summary);
         setContentView(R.layout.layout_summary);
         TextView textView = (TextView) findViewById(R.id.text_summary);
