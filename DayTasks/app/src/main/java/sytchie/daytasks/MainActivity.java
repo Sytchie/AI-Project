@@ -15,14 +15,11 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
-    private final String[] taskList = {"Morning Sport", "Sport", "Stepper", "Walk", "Read"};
-
+    private String[] taskList = {"Morning Sport", "Sport", "Stepper", "Walk", "Read"};
+    private int posThingNum = 3;
     private String date = null, dayStartTime = null, dayEndTime = null;
-    private CheckBox[] checkBoxes = new CheckBox[5];
-    private Map<String, Boolean> tasks = new HashMap<>();
-    private EditText[] editTexts = new EditText[3];
-    private Map<String, String> posThings = new HashMap<>();
-    private boolean enableSubmit = false;
+    private Map<String, Boolean> tasks = new LinkedHashMap<>();
+    private Map<String, String> posThings = new LinkedHashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,7 +33,6 @@ public class MainActivity extends AppCompatActivity {
             String time = "Day started at " + dayStartTime;
             TextView textView = (TextView) findViewById(R.id.text_day_start);
             textView.setText(time);
-            startTaskListeners();
         }
     }
 
@@ -49,13 +45,13 @@ public class MainActivity extends AppCompatActivity {
     private void loadDay() {
         date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
         SharedPreferences sharedPreferences = getSharedPreferences("day_" + date.replaceAll("\\.", "-"), MODE_PRIVATE);
-        //sharedPreferences.edit().clear().apply(); //Debug
+        //sharedPreferences.edit().clear().apply(); //Clear day
         dayStartTime = sharedPreferences.getString("day_start_time", null);
         dayEndTime = sharedPreferences.getString("day_end_time", null);
         for (String task : taskList) {
             tasks.put(task, Boolean.valueOf(sharedPreferences.getString(task, null)));
         }
-        for (int i = 1; i <= editTexts.length; i++) {
+        for (int i = 1; i <= posThingNum; i++) {
             String posThing = "pos_thing_" + i;
             String posString = sharedPreferences.getString(posThing, null);
             if (posString == null) {
@@ -66,65 +62,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadCheckBoxes() {
-        checkBoxes[0] = (CheckBox) findViewById(R.id.checkBox);
-        checkBoxes[1] = (CheckBox) findViewById(R.id.checkBox2);
-        checkBoxes[2] = (CheckBox) findViewById(R.id.checkBox3);
-        checkBoxes[3] = (CheckBox) findViewById(R.id.checkBox4);
-        checkBoxes[4] = (CheckBox) findViewById(R.id.checkBox5);
-        int i = 0;
-        for (String task : tasks.keySet()) {
-            boolean tmp = tasks.get(task);
-            checkBoxes[i++].setChecked(tmp);
-        }
-    }
-
-    private void loadEditTexts() {
-        editTexts[0] = (EditText) findViewById(R.id.editText);
-        editTexts[1] = (EditText) findViewById(R.id.editText2);
-        editTexts[2] = (EditText) findViewById(R.id.editText3);
-        for (String posThing : posThings.keySet()) {
-            editTexts[Integer.parseInt(posThing.substring(posThing.length() - 1)) - 1].setText(posThings.get(posThing));
-        }
-        enableSubmit = !(posThings.containsValue(null) ||
-                posThings.containsValue("") ||
-                posThings.containsValue("Positive thing 1") ||
-                posThings.containsValue("Positive thing 2") ||
-                posThings.containsValue("Positive thing 3"));
-    }
-
-    private void saveDay() {
-        SharedPreferences sharedPreferences = getSharedPreferences("day_" + date.replaceAll("\\.", "-"), MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("day_start_time", dayStartTime);
-        editor.putString("day_end_time", dayEndTime);
-        for (String task : tasks.keySet()) {
-            editor.putString(task, String.valueOf(tasks.get(task)));
-        }
-        for (int i = 1; i <= editTexts.length; i++) {
-            String posThing = "pos_thing_" + i;
-            editor.putString(posThing, posThings.get(posThing));
-        }
-        editor.apply();
-    }
-
-    private void startTaskListeners() {
-        int i = 0;
+        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_tasks_inner);
         for (final String task : tasks.keySet()) {
-            checkBoxes[i++].setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            CheckBox checkBox = new CheckBox(this);
+            checkBox.setText(task);
+            checkBox.setChecked(tasks.get(task));
+            linearLayout.addView(checkBox);
+            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                     tasks.put(task, isChecked);
+                    enableEndDay();
                 }
             });
         }
+        enableEndDay();
     }
 
-    private void startTextListeners() {
-        int i = 0;
-        for (final String posThing : posThings.keySet()) {
-            final EditText editText = editTexts[i++];
-            final Button button = (Button) findViewById(R.id.button_submit);
-            button.setEnabled(enableSubmit);
+    private void loadEditTexts() {
+        LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_day_end_inner);
+        for (int i = 1; i <= posThingNum; i++) {
+            final EditText editText = new EditText(this);
+            final int finalI = i;
+            String string = posThings.get("pos_thing_" + i);
+            editText.setText(string);
+            editText.setSelectAllOnFocus(true);
+            editText.setSingleLine(true);
+            linearLayout.addView(editText);
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
                 public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -136,18 +100,27 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void afterTextChanged(Editable editable) {
-                    button.setEnabled(false);
-                    posThings.put(posThing, editText.getText().toString());
-                    if (!(posThings.containsValue(null) ||
-                            posThings.containsValue("") ||
-                            posThings.containsValue("Positive thing 1") ||
-                            posThings.containsValue("Positive thing 2") ||
-                            posThings.containsValue("Positive thing 3"))) {
-                        button.setEnabled(true);
-                    }
+                    posThings.put("pos_thing_" + finalI, editText.getText().toString());
+                    enableSubmit();
                 }
             });
         }
+        enableSubmit();
+    }
+
+    private void saveDay() {
+        SharedPreferences sharedPreferences = getSharedPreferences("day_" + date.replaceAll("\\.", "-"), MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("day_start_time", dayStartTime);
+        editor.putString("day_end_time", dayEndTime);
+        for (String task : tasks.keySet()) {
+            editor.putString(task, String.valueOf(tasks.get(task)));
+        }
+        for (int i = 1; i <= posThingNum; i++) {
+            String posThing = "pos_thing_" + i;
+            editor.putString(posThing, posThings.get(posThing));
+        }
+        editor.apply();
     }
 
     private void copyToClipboard(String msg) {
@@ -156,19 +129,19 @@ public class MainActivity extends AppCompatActivity {
         clipboard.setPrimaryClip(clip);
     }
 
-    private void saveToDB() {
-        //TODO: Connect to and query from DB
-    }
-
     public void startDay(View view) {
         dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
         String time = "Day started at " + dayStartTime;
         setContentView(R.layout.layout_tasks);
         loadCheckBoxes();
-        startTaskListeners();
         TextView textView = (TextView) findViewById(R.id.text_day_start);
         textView.setText(time);
+    }
+
+    private void enableEndDay() {
+        Button button = (Button) findViewById(R.id.button_end_day);
+        button.setEnabled(!(Integer.parseInt(new SimpleDateFormat("HH", Locale.GERMANY).format(new Date())) < 22));
     }
 
     public void endDay(View view) {
@@ -176,9 +149,20 @@ public class MainActivity extends AppCompatActivity {
         String time = "Day ended at " + dayEndTime;
         setContentView(R.layout.layout_day_end);
         loadEditTexts();
-        startTextListeners();
         TextView textView = (TextView) findViewById(R.id.text_day_end);
         textView.setText(time);
+    }
+
+    private void enableSubmit() {
+        Button button = (Button) findViewById(R.id.button_submit);
+        boolean b = true;
+        for (int i = 1; i <= posThingNum; i++) {
+            String string = posThings.get("pos_thing_" + i);
+            if (string == null || string.matches("Positive thing " + i) || string.matches("")) {
+                b = false;
+            }
+        }
+        button.setEnabled(b);
     }
 
     public void submit(View view) {
@@ -189,8 +173,9 @@ public class MainActivity extends AppCompatActivity {
             summary += task + ": " + tasks.get(task) + "\n";
         }
         summary += "\n";
-        for (String posThing : posThings.keySet()) {
-            summary += "Positive thing " + posThing.substring(posThing.length() - 1) + ": " + posThings.get(posThing) + "\n";
+        for (int i = 1; i <= posThings.keySet().size(); i++) {
+            String posThing = "pos_thing_" + i;
+            summary += "Positive thing " + i + ": " + posThings.get(posThing) + "\n";
         }
         copyToClipboard(summary);
         saveDay();
