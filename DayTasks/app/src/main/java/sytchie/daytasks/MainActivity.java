@@ -17,7 +17,7 @@ import java.util.*;
 public class MainActivity extends AppCompatActivity {
     private String[] taskList = {"Morning Sport", "Sport", "Stepper", "Walk", "Read"};
     private int posThingNum = 3;
-    private String date = null, dayStartTime = null, dayEndTime = null;
+    private String date, dayStartTime, dayEndTime;
     private Map<String, Boolean> tasks = new LinkedHashMap<>();
     private Map<String, String> posThings = new LinkedHashMap<>();
 
