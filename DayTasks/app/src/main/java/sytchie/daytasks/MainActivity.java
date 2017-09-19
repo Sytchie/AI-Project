@@ -25,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loadDay();
-        if (dayStartTime == null) {
+        if (enableStartDay()) {
             setContentView(R.layout.layout_day_start);
         } else {
             setContentView(R.layout.layout_tasks);
@@ -122,6 +122,10 @@ public class MainActivity extends AppCompatActivity {
         editor.apply();
     }
 
+    private boolean enableStartDay() {
+        return (dayStartTime == null || !date.matches(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000))));
+    }
+
     public void startDay(View view) {
         dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
@@ -134,7 +138,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void enableEndDay() {
         Button button = (Button) findViewById(R.id.button_end_day);
-        button.setEnabled(!(Integer.parseInt(new SimpleDateFormat("HH", Locale.GERMANY).format(new Date())) < 22));
+        int time = Integer.parseInt(new SimpleDateFormat("HH", Locale.GERMANY).format(new Date()));
+        button.setEnabled(time < 5 || time > 21);
     }
 
     public void endDay(View view) {
