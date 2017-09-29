@@ -10,27 +10,24 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.*;
+import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
-    private String[] taskList = {"Morning Sport", "Sport", "Stepper", "Walk", "Read"};
-    private int posThingNum = 3;
-    private String date, dayStartTime, dayEndTime;
-    private Map<String, Boolean> tasks = new LinkedHashMap<>();
-    private Map<String, String> posThings = new LinkedHashMap<>();
+    private Day day;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         loadDay();
-        if (enableStartDay()) {
+        if (Objects.equals(day.dayStartTime, "")) {
             setContentView(R.layout.layout_day_start);
         } else {
             setContentView(R.layout.layout_tasks);
             loadCheckBoxes();
-            String time = "Day started at " + dayStartTime;
+            String time = "Day started at " + day.dayStartTime;
             TextView textView = (TextView) findViewById(R.id.text_day_start);
             textView.setText(time);
         }
@@ -43,35 +40,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void loadDay() {
-        date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
-        SharedPreferences sharedPreferences = getSharedPreferences("day_" + date.replaceAll("\\.", "-"), MODE_PRIVATE);
-        //sharedPreferences.edit().clear().apply(); //Clear day
-        dayStartTime = sharedPreferences.getString("day_start_time", null);
-        dayEndTime = sharedPreferences.getString("day_end_time", null);
-        for (String task : taskList) {
-            tasks.put(task, Boolean.valueOf(sharedPreferences.getString(task, null)));
-        }
-        for (int i = 1; i <= posThingNum; i++) {
-            String posKey = "pos_thing_" + i;
-            String posString = sharedPreferences.getString(posKey, null);
-            if (posString == null) {
-                posString = "Positive thing " + i;
-            }
-            posThings.put(posKey, posString);
+        SharedPreferences sharedPreferences = getSharedPreferences("day_tasks", MODE_PRIVATE);
+        Gson gson = new Gson();
+        String currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
+        String json = sharedPreferences.getString("day_" + currentDate, "");
+        if (json.matches("")) {
+            day = new Day();
+        } else {
+            day = gson.fromJson(json, Day.class);
         }
     }
 
     private void loadCheckBoxes() {
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_tasks_inner);
-        for (final String task : tasks.keySet()) {
+        for (final String task : day.tasks.keySet()) {
             CheckBox checkBox = new CheckBox(this);
             checkBox.setText(task);
-            checkBox.setChecked(tasks.get(task));
+            checkBox.setChecked(day.tasks.get(task));
             linearLayout.addView(checkBox);
             checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
-                    tasks.put(task, isChecked);
+                    day.tasks.put(task, isChecked);
                     enableEndDay();
                 }
             });
@@ -81,10 +71,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadEditTexts() {
         LinearLayout linearLayout = (LinearLayout) findViewById(R.id.layout_day_end_inner);
-        for (int i = 1; i <= posThingNum; i++) {
+        for (int i = 1; i <= day.posThingsNum; i++) {
             final EditText editText = new EditText(this);
             final String posKey = "pos_thing_" + i;
-            editText.setText(posThings.get(posKey));
+            editText.setText(day.posThings.get(posKey));
             editText.setSelectAllOnFocus(true);
             editText.setSingleLine(true);
             linearLayout.addView(editText);
@@ -99,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
 
                 @Override
                 public void afterTextChanged(Editable editable) {
-                    posThings.put(posKey, editText.getText().toString());
+                    day.posThings.put(posKey, editText.getText().toString());
                     enableSubmit();
                 }
             });
@@ -108,28 +98,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void saveDay() {
-        SharedPreferences sharedPreferences = getSharedPreferences("day_" + date.replaceAll("\\.", "-"), MODE_PRIVATE);
+        SharedPreferences sharedPreferences = getSharedPreferences("day_tasks", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putString("day_start_time", dayStartTime);
-        editor.putString("day_end_time", dayEndTime);
-        for (String task : tasks.keySet()) {
-            editor.putString(task, String.valueOf(tasks.get(task)));
-        }
-        for (int i = 1; i <= posThingNum; i++) {
-            String posKey = "pos_thing_" + i;
-            editor.putString(posKey, posThings.get(posKey));
-        }
+        Gson gson = new Gson();
+        String json = gson.toJson(day);
+        editor.putString("day_" + day.date.replaceAll("\\.", "-"), json);
         editor.apply();
     }
 
-    private boolean enableStartDay() {
-        return (dayStartTime == null || !date.matches(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000))));
-    }
-
     public void startDay(View view) {
-        dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
-        date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date());
-        String timeString = "Day started at " + dayStartTime;
+        day.dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
+        day.date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
+        String timeString = "Day started at " + day.dayStartTime;
         setContentView(R.layout.layout_tasks);
         loadCheckBoxes();
         TextView textView = (TextView) findViewById(R.id.text_day_start);
@@ -143,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void endDay(View view) {
-        dayEndTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
-        String timeString = "Day ended at " + dayEndTime;
+        day.dayEndTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
+        String timeString = "Day ended at " + day.dayEndTime;
         setContentView(R.layout.layout_day_end);
         loadEditTexts();
         TextView textView = (TextView) findViewById(R.id.text_day_end);
@@ -159,31 +139,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void enableSubmit() {
         Button button = (Button) findViewById(R.id.button_submit);
-        boolean enable = true;
-        for (int i = 1; i <= posThingNum; i++) {
-            String posKey = posThings.get("pos_thing_" + i);
-            if (posKey == null || posKey.matches("Positive thing " + i) || posKey.matches("")) {
-                enable = false;
+        for (int i = 1; i <= day.posThingsNum; i++) {
+            String posKey = day.posThings.get("pos_thing_" + i);
+            if (posKey.matches("Positive thing " + i) || posKey.matches("")) {
+                button.setEnabled(false);
+                return;
             }
         }
-        button.setEnabled(enable);
+        button.setEnabled(true);
     }
 
     public void submit(View view) {
-        String summary = "Summary for " + date + ":\n\n" +
-                "Day start at " + dayStartTime + "\n" +
-                "Day end at " + dayEndTime + "\n\n";
-        for (String task : tasks.keySet()) {
+        saveDay();
+        String summary = "Summary for " + day.date + ":\n\n" +
+                "Day start at " + day.dayStartTime + "\n" +
+                "Day end at " + day.dayEndTime + "\n\n";
+        for (String task : day.tasks.keySet()) {
             String string = "No";
-            if (tasks.get(task)) {
+            if (day.tasks.get(task)) {
                 string = "Yes";
             }
             summary += task + ": " + string + "\n";
         }
         summary += "\n";
-        for (int i = 1; i <= posThings.keySet().size(); i++) {
+        for (int i = 1; i <= day.posThingsNum; i++) {
             String posKey = "pos_thing_" + i;
-            summary += "Positive thing " + i + ": " + posThings.get(posKey) + "\n";
+            summary += "Positive thing " + i + ": " + day.posThings.get(posKey) + "\n";
         }
         summary = summary.substring(0, summary.length() - 1);
         copyToClipboard(summary);
