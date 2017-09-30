@@ -16,6 +16,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
+    private ArrayList<String> taskList = new ArrayList<>(Arrays.asList(new String[]{"Morning Sport", "Sport", "Stepper", "Walk", "Read"}));
     private Day day;
 
     @Override
@@ -26,10 +27,10 @@ public class MainActivity extends AppCompatActivity {
             setContentView(R.layout.layout_day_start);
         } else {
             setContentView(R.layout.layout_tasks);
-            loadCheckBoxes();
             String time = "Day started at " + day.dayStartTime;
             TextView textView = (TextView) findViewById(R.id.text_day_start);
             textView.setText(time);
+            loadCheckBoxes();
         }
     }
 
@@ -45,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
         String currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
         String json = sharedPreferences.getString("day_" + currentDate, "");
         if (json.matches("")) {
-            day = new Day();
+            day = new Day(taskList);
         } else {
             day = gson.fromJson(json, Day.class);
         }
@@ -107,13 +108,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startDay(View view) {
+        setContentView(R.layout.layout_tasks);
         day.dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         day.date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
         String timeString = "Day started at " + day.dayStartTime;
-        setContentView(R.layout.layout_tasks);
-        loadCheckBoxes();
         TextView textView = (TextView) findViewById(R.id.text_day_start);
         textView.setText(timeString);
+        loadCheckBoxes();
     }
 
     private void enableEndDay() {
@@ -123,12 +124,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void endDay(View view) {
+        setContentView(R.layout.layout_day_end);
+        TextView textView = (TextView) findViewById(R.id.text_day_end);
         day.dayEndTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
         String timeString = "Day ended at " + day.dayEndTime;
-        setContentView(R.layout.layout_day_end);
-        loadEditTexts();
-        TextView textView = (TextView) findViewById(R.id.text_day_end);
         textView.setText(timeString);
+        textView = (TextView) findViewById(R.id.text_pos_things);
+        textView.setText("\nWrite down " + day.posThingsNum + " positive things that happened today:");
+        loadEditTexts();
     }
 
     private void copyToClipboard(String string) {
@@ -151,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void submit(View view) {
         saveDay();
+        setContentView(R.layout.layout_summary);
         String summary = "Summary for " + day.date + ":\n\n" +
                 "Day start at " + day.dayStartTime + "\n" +
                 "Day end at " + day.dayEndTime + "\n\n";
@@ -168,7 +172,6 @@ public class MainActivity extends AppCompatActivity {
         }
         summary = summary.substring(0, summary.length() - 1);
         copyToClipboard(summary);
-        setContentView(R.layout.layout_summary);
         TextView textView = (TextView) findViewById(R.id.text_summary);
         textView.setText(summary);
     }

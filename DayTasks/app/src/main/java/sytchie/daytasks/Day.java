@@ -11,8 +11,8 @@ class Day {
     int posThingsNum = 3;
     Map<String, String> posThings = new LinkedHashMap<>();
 
-    Day() {
-        for (String task : new ArrayList<>(Arrays.asList(new String[]{"Morning Sport", "Sport", "Stepper", "Walk", "Read"}))) {
+    Day(ArrayList<String> taskList) {
+        for (String task : taskList) {
             tasks.put(task, false);
         }
         for (int i = 1; i <= posThingsNum; i++) {

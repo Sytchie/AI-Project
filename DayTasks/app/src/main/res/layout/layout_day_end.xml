@@ -17,14 +17,14 @@
             android:layout_height="wrap_content"
             android:id="@+id/text_day_end" android:layout_alignParentTop="true" android:layout_centerHorizontal="true"/>
     <TextView
-            android:text="\nWrite down three positive things that happened today:"
+            android:text="\nWrite down - positive things that happened today:"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:id="@+id/textView3"
+            android:layout_height="wrap_content" android:id="@+id/text_pos_things"
             android:layout_below="@+id/text_day_end" android:layout_alignParentStart="true"/>
     <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent" android:layout_above="@+id/button_submit"
-            android:layout_below="@+id/textView3">
+            android:layout_below="@+id/text_pos_things">
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                       android:orientation="vertical" android:id="@+id/layout_day_end_inner"/>
     </ScrollView>
