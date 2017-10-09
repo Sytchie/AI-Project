@@ -16,7 +16,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class MainActivity extends AppCompatActivity {
-    private ArrayList<String> taskList = new ArrayList<>(Arrays.asList(new String[]{"Morning Sport", "Sport", "Stepper", "Walk", "Read"}));
+    private ArrayList<String> defaultTaskList = new ArrayList<>(Arrays.asList(new String[]{"Morning Sport", "Sport", "Stepper", "Walk", "Read"}));
+    private int posThingsNum, dayResetTime;
     private Day day;
 
     @Override
@@ -42,11 +43,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadDay() {
         SharedPreferences sharedPreferences = getSharedPreferences("day_tasks", MODE_PRIVATE);
+        posThingsNum = sharedPreferences.getInt("pos_things_num", 3);
+        dayResetTime = sharedPreferences.getInt("day_reset_time", 5);
         Gson gson = new Gson();
-        String currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
+        String currentDate = new SimpleDateFormat("dd-MM-yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - dayResetTime * 3600 * 1000));
         String json = sharedPreferences.getString("day_" + currentDate, "");
         if (json.matches("")) {
-            day = new Day(taskList);
+            day = new Day(defaultTaskList, posThingsNum);
         } else {
             day = gson.fromJson(json, Day.class);
         }
@@ -101,6 +104,8 @@ public class MainActivity extends AppCompatActivity {
     private void saveDay() {
         SharedPreferences sharedPreferences = getSharedPreferences("day_tasks", MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putInt("pos_things_num", posThingsNum);
+        editor.putInt("day_reset_time", dayResetTime);
         Gson gson = new Gson();
         String json = gson.toJson(day);
         editor.putString("day_" + day.date.replaceAll("\\.", "-"), json);
@@ -110,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
     public void startDay(View view) {
         setContentView(R.layout.layout_tasks);
         day.dayStartTime = new SimpleDateFormat("HH:mm", Locale.GERMANY).format(new Date());
-        day.date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - 5 * 3600 * 1000));
+        day.date = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(new Date(new Date().getTime() - dayResetTime * 3600 * 1000));
         String timeString = "Day started at " + day.dayStartTime;
         TextView textView = (TextView) findViewById(R.id.text_day_start);
         textView.setText(timeString);
@@ -120,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
     private void enableEndDay() {
         Button button = (Button) findViewById(R.id.button_end_day);
         int time = Integer.parseInt(new SimpleDateFormat("HH", Locale.GERMANY).format(new Date()));
-        button.setEnabled(time < 5 || time > 21);
+        button.setEnabled(time < dayResetTime || time > 21);
     }
 
     public void endDay(View view) {
